@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react"
 import styled from "styled-components"
+import { useEffect, useState } from "react"
+
+import AddTask from "./components/addTask"
 
 export default function Dashboard() {
 
@@ -7,18 +9,21 @@ export default function Dashboard() {
     const [filter, setFilter] = useState("-")
     const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0])
 
+    const [toggleCard, setToggleCard] = useState(false)
+
     return (
         <>
+            { toggleCard && (<AddTask></AddTask>)}
             <Container>
                 <Filter className="overflow">
-                    <input className="input" type="text" placeholder="Cari Tugas" value={searchTugas} onChange={(e) => setSearchTugas(e.target.value)}/>
+                    <input className="input" type="text" placeholder="Cari Tugas" value={searchTugas} onChange={(e) => setSearchTugas(e.target.value)} />
                     <select className="input" value={filter} onChange={(e) => setFilter(e.target.value)}>
                         <option value="-">Filter</option>
                         <option value="terdekat">Terdekat</option>
                         <option value="terlama">Terlama</option>
                     </select>
                     <input className="input" type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
-                    <button className="btn">ADD</button>
+                    <button className="btn" onClick={() => setToggleCard(!toggleCard)}>ADD</button>
                     <button className="btn">LOGIN ADMIN</button>
                 </Filter>
                 <Wrapper></Wrapper>
