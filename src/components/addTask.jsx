@@ -83,6 +83,8 @@ const appear = keyframes`
 `
 
 const Card = styled.div`
+    z-index: 99;
+    background-color: #FFFBE6;
     border: 2px solid #C0EBA6;
     border-radius: 10px;
     width: 450px;

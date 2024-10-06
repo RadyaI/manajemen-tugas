@@ -3,17 +3,62 @@ import { useEffect, useState } from "react"
 
 import AddTask from "./components/addTask"
 
+import { db } from "./db/firebase"
+import { collection, getDocs, orderBy, query } from "firebase/firestore"
+
 export default function Dashboard() {
 
     const [searchTugas, setSearchTugas] = useState("")
     const [filter, setFilter] = useState("-")
     const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0])
 
+    const [taskData, setTaskData] = useState([])
+
     const [toggleCard, setToggleCard] = useState(false)
 
     function handlePopup(value) {
         setToggleCard(value)
     }
+
+    function DisplayTask() {
+        let data = taskData;
+
+        data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+        const dis = data.map((i, index) =>
+            <div class="card" key={index}>
+                <div class="card-header">
+                    <h2 class="task-name">{i.tugas}</h2>
+                    <p class="course-name">{i.matkul}</p>
+                </div>
+                <div class="card-body">
+                    <p class="task-desc">Deskripsi Tugas: {i.desc}</p>
+                    Sekarang Tanggal: {`${new Date().getFullYear()}-${new Date().getMonth()+1}-${new Date().getDate()}`}
+                    <p class="deadline">Deadline: {i.deadline}</p>
+                </div>
+            </div>
+        );
+
+        return dis;
+    }
+
+
+    async function getTask() {
+        try {
+            const get = await getDocs(query(collection(db, 'tugas_h'), orderBy('time', 'asc')))
+            const tempData = []
+            get.forEach((data) => {
+                tempData.push({ ...data.data(), id: data.id })
+            })
+            setTaskData(tempData)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        getTask()
+    }, [])
 
     return (
         <>
@@ -23,56 +68,14 @@ export default function Dashboard() {
                     <input className="input" type="text" placeholder="Cari Tugas" value={searchTugas} onChange={(e) => setSearchTugas(e.target.value)} />
                     <select className="input" value={filter} onChange={(e) => setFilter(e.target.value)}>
                         <option value="-">Filter</option>
-                        <option value="terdekat">Terdekat</option>
-                        <option value="terlama">Terlama</option>
-                        <option value="terakhir_diupdate">Terakhir Ditambah</option>
+                        <option value="outdate">Lewat Deadline</option>
                     </select>
                     <input className="input" type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
                     <button className="btn" onClick={() => setToggleCard(!toggleCard)}>ADD</button>
                     <button className="btn">LOGIN ADMIN</button>
                 </Filter>
                 <Wrapper>
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="task-name">Nama Tugas</h2>
-                            <p class="course-name">Mata Kuliah</p>
-                        </div>
-                        <div class="card-body">
-                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
-                            <p class="deadline">Deadline: 12 Oktober 2024</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="task-name">Nama Tugas</h2>
-                            <p class="course-name">Mata Kuliah</p>
-                        </div>
-                        <div class="card-body">
-                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
-                            <p class="deadline">Deadline: 12 Oktober 2024</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="task-name">Nama Tugas</h2>
-                            <p class="course-name">Mata Kuliah</p>
-                        </div>
-                        <div class="card-body">
-                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
-                            <p class="deadline">Deadline: 12 Oktober 2024</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="task-name">Nama Tugas</h2>
-                            <p class="course-name">Mata Kuliah</p>
-                        </div>
-                        <div class="card-body">
-                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
-                            <p class="deadline">Deadline: 12 Oktober 2024</p>
-                        </div>
-                    </div>
-
+                    <DisplayTask></DisplayTask>
                 </Wrapper>
             </Container>
         </>
@@ -190,7 +193,7 @@ const Wrapper = styled.div`
 .deadline {
     font-size: 14px;
     font-weight: bold;
-    color: #FCCD2A; /* Warna kuning untuk deadline */
+    color: #fc2a2af1; /* Warna kuning untuk deadline */
 }
 
 `
