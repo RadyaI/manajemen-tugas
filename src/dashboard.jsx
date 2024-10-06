@@ -31,7 +31,7 @@ export default function Dashboard() {
             const provider = new GoogleAuthProvider()
             const user = await signInWithPopup(auth, provider)
             // Console.log for development
-            console.log(user)
+            // console.log(user)
             const store = {
                 email: user.user.email,
                 displayName: user.user.displayName
@@ -61,6 +61,7 @@ export default function Dashboard() {
             icon: 'warning',
             title: 'Ingin LogOut?',
             buttons: ['Tidak', 'Yoi'],
+            dangerMode: true
         })
 
         if (alert) {
