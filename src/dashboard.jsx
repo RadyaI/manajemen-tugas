@@ -5,7 +5,7 @@ import Cookies from 'js-cookie'
 import AddTask from "./components/addTask"
 
 import { db, auth } from "./db/firebase"
-import { collection, getDocs, orderBy, query } from "firebase/firestore"
+import { collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore"
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { isAdmin } from "./middleware/auth"
 
@@ -16,7 +16,7 @@ export default function Dashboard() {
 
     const [searchTugas, setSearchTugas] = useState("")
     const [filter, setFilter] = useState("-")
-    const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0])
+    const [tanggal, setTanggal] = useState("")
 
     const [taskData, setTaskData] = useState([])
 
@@ -75,7 +75,21 @@ export default function Dashboard() {
     function DisplayTask() {
         let data = taskData;
 
-        data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        data = data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+        if (searchTugas !== "") {
+            data = data.filter(i => i.tugas.toLowerCase().includes(searchTugas.toLowerCase()))
+        }
+
+        if (tanggal !== "") {
+            data = data.filter(i => i.deadline == tanggal)
+        }
+
+        if (filter !== "-") {
+            const today = Timestamp.now().toMillis()
+            data = data.filter(i => i.deadlineMilis < today)
+        }
+
 
         const dis = data.map((i, index) =>
             <div className="card" key={index}>
@@ -87,6 +101,10 @@ export default function Dashboard() {
                     <p className="task-desc">Deskripsi Tugas: {i.desc}</p>
                     Sekarang Tanggal: {`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`}
                     <p className="deadline">Deadline: {i.deadline}</p>
+                    {admin && (<div className="admin">
+                        <p>Edit</p>
+                        <p onClick={() => hapus(i.id)}>Hapus</p>
+                    </div>)}
                 </div>
             </div>
         );
@@ -97,14 +115,36 @@ export default function Dashboard() {
 
     async function getTask() {
         try {
-            const get = await getDocs(query(collection(db, 'tugas_h'), orderBy('time', 'asc')))
-            const tempData = []
-            get.forEach((data) => {
-                tempData.push({ ...data.data(), id: data.id })
+
+            onSnapshot(query(collection(db, 'tugas_h'), orderBy('time', 'asc')), (snapshot) => {
+                const tempData = []
+                snapshot.forEach((data) => {
+                    tempData.push({ ...data.data(), id: data.id })
+                });
+                setTaskData(tempData)
             })
-            setTaskData(tempData)
+
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    async function hapus(id) {
+        const alert = await swal({
+            icon: 'warning',
+            title: "Ingin hapus tugas ini?",
+            buttons: ["Tidak", "Iya"],
+            dangerMode: true
+        })
+
+        if(alert){
+            const refD = doc(db, 'tugas_h', id)
+            await deleteDoc(refD)
+            swal({
+                icon: 'success',
+                button: false,
+                timer: 500
+            })
         }
     }
 
@@ -126,10 +166,10 @@ export default function Dashboard() {
                         <option value="-">Filter</option>
                         <option value="outdate">Lewat Deadline</option>
                     </select>
-                    <input className="input" type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
+                    <input className="input" type="date" onChange={(e) => setTanggal(e.target.value)} />
                     {admin && (<button className="btn" onClick={() => setToggleCard(!toggleCard)}>ADD</button>)}
-                    {admin && (<button className="btn" onClick={logout}>LogOut</button>)}
-                    {!isLoggedIn && (<button className="btn" onClick={logIn}>LOGIN ADMIN</button>)}
+                    {admin && (<button className="btn" onClick={() => logout()}>LogOut</button>)}
+                    {!isLoggedIn && (<button className="btn" onClick={() => logIn()}>LOGIN ADMIN</button>)}
                 </Filter>
                 <Wrapper className="overflow">
                     <DisplayTask></DisplayTask>
@@ -261,6 +301,22 @@ const Wrapper = styled.div`
     font-size: 14px;
     font-weight: bold;
     color: #fc2a2af1; /* Warna kuning untuk deadline */
+}
+
+.admin{
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.admin p:nth-child(1){
+    color: green;
+    cursor: pointer;
+}
+
+.admin p:nth-child(2){
+    color: red;
+    cursor: pointer;
 }
 
 `

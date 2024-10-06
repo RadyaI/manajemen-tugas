@@ -26,6 +26,7 @@ export default function AddTask({setPopup}) {
                 matkul: matkul,
                 desc: desc,
                 deadline: date,
+                deadlineMilis: new Date(date).getTime(),
                 time: Timestamp.now().toMillis()
             })
 
@@ -60,7 +61,7 @@ export default function AddTask({setPopup}) {
 
                     <label>Tenggat: </label> <br />
                     <input type="date" onChange={(e) => setDate(e.target.value)} /> <br /><br />
-                    <button onClick={add}>TAMBAH</button><br /><br />
+                    <button onClick={() => add()}>TAMBAH</button><br /><br />
                 </div>
             </Card>
         </>
