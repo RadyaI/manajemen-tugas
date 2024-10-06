@@ -1,12 +1,18 @@
 import styled from "styled-components"
 import { useEffect, useState } from "react"
+import Cookies from 'js-cookie'
 
 import AddTask from "./components/addTask"
 
-import { db } from "./db/firebase"
+import { db, auth } from "./db/firebase"
 import { collection, getDocs, orderBy, query } from "firebase/firestore"
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { isAdmin } from "./middleware/auth"
 
 export default function Dashboard() {
+
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [admin, setIsAdmin] = useState(false)
 
     const [searchTugas, setSearchTugas] = useState("")
     const [filter, setFilter] = useState("-")
@@ -20,21 +26,66 @@ export default function Dashboard() {
         setToggleCard(value)
     }
 
+    async function logIn() {
+        try {
+            const provider = new GoogleAuthProvider()
+            const user = await signInWithPopup(auth, provider)
+            // Console.log for development
+            console.log(user)
+            const store = {
+                email: user.user.email,
+                displayName: user.user.displayName
+            }
+            const adminCheck = isAdmin(store.email)
+            if (adminCheck) {
+                Cookies.set('loginData', JSON.stringify(store))
+                Cookies.set('isLoggedIn', true)
+                Cookies.set('isAdmin', adminCheck)
+
+                setIsLoggedIn(true)
+                setIsAdmin(adminCheck)
+            } else {
+                swal({
+                    icon: 'error',
+                    title: 'Kamu bukan admin hey',
+                    button: 'Oalah'
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    function logout() {
+        const alert = swal({
+            icon: 'warning',
+            title: 'Ingin LogOut?',
+            buttons: ['Tidak', 'Yoi'],
+        })
+
+        if (alert) {
+            Cookies.remove("loginData")
+            Cookies.remove("isAdmin")
+            Cookies.remove("isLoggedIn")
+            location.reload()
+        }
+    }
+
     function DisplayTask() {
         let data = taskData;
 
         data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
         const dis = data.map((i, index) =>
-            <div class="card" key={index}>
-                <div class="card-header">
-                    <h2 class="task-name">{i.tugas}</h2>
-                    <p class="course-name">{i.matkul}</p>
+            <div className="card" key={index}>
+                <div className="card-header">
+                    <h2 className="task-name">{i.tugas}</h2>
+                    <p className="course-name">{i.matkul}</p>
                 </div>
-                <div class="card-body">
-                    <p class="task-desc">Deskripsi Tugas: {i.desc}</p>
-                    Sekarang Tanggal: {`${new Date().getFullYear()}-${new Date().getMonth()+1}-${new Date().getDate()}`}
-                    <p class="deadline">Deadline: {i.deadline}</p>
+                <div className="card-body">
+                    <p className="task-desc">Deskripsi Tugas: {i.desc}</p>
+                    Sekarang Tanggal: {`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`}
+                    <p className="deadline">Deadline: {i.deadline}</p>
                 </div>
             </div>
         );
@@ -58,6 +109,10 @@ export default function Dashboard() {
 
     useEffect(() => {
         getTask()
+
+        setIsLoggedIn(Cookies.get("isLoggedIn") == "true" || false)
+        setIsAdmin(Cookies.get('isAdmin') == "true" || false)
+
     }, [])
 
     return (
@@ -71,10 +126,11 @@ export default function Dashboard() {
                         <option value="outdate">Lewat Deadline</option>
                     </select>
                     <input className="input" type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
-                    <button className="btn" onClick={() => setToggleCard(!toggleCard)}>ADD</button>
-                    <button className="btn">LOGIN ADMIN</button>
+                    {admin && (<button className="btn" onClick={() => setToggleCard(!toggleCard)}>ADD</button>)}
+                    {admin && (<button className="btn" onClick={logout}>LogOut</button>)}
+                    {!isLoggedIn && (<button className="btn" onClick={logIn}>LOGIN ADMIN</button>)}
                 </Filter>
-                <Wrapper>
+                <Wrapper className="overflow">
                     <DisplayTask></DisplayTask>
                 </Wrapper>
             </Container>
@@ -143,6 +199,16 @@ const Wrapper = styled.div`
     height: 80%;
     overflow-y: auto;
 
+    &.overflow::-webkit-scrollbar{
+        width: 10px;
+    }
+
+    &.overflow::-webkit-scrollbar-thumb{
+        width: 10px;
+        border-radius: 50px;
+        background-color: #FCCD2A;
+    }
+
     .card {
     width: 70%;
     margin: 20px auto;
@@ -152,7 +218,7 @@ const Wrapper = styled.div`
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+    }
 
 .card:hover {
     transform: scale(1.02);
