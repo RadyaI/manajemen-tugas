@@ -17,7 +17,7 @@ export default function Dashboard() {
 
     return (
         <>
-            { toggleCard && (<AddTask setPopup={handlePopup}></AddTask>)}
+            {toggleCard && (<AddTask setPopup={handlePopup}></AddTask>)}
             <Container>
                 <Filter className="overflow">
                     <input className="input" type="text" placeholder="Cari Tugas" value={searchTugas} onChange={(e) => setSearchTugas(e.target.value)} />
@@ -31,7 +31,49 @@ export default function Dashboard() {
                     <button className="btn" onClick={() => setToggleCard(!toggleCard)}>ADD</button>
                     <button className="btn">LOGIN ADMIN</button>
                 </Filter>
-                <Wrapper></Wrapper>
+                <Wrapper>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="task-name">Nama Tugas</h2>
+                            <p class="course-name">Mata Kuliah</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
+                            <p class="deadline">Deadline: 12 Oktober 2024</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="task-name">Nama Tugas</h2>
+                            <p class="course-name">Mata Kuliah</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
+                            <p class="deadline">Deadline: 12 Oktober 2024</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="task-name">Nama Tugas</h2>
+                            <p class="course-name">Mata Kuliah</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
+                            <p class="deadline">Deadline: 12 Oktober 2024</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="task-name">Nama Tugas</h2>
+                            <p class="course-name">Mata Kuliah</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="task-desc">Deskripsi Tugas: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio.</p>
+                            <p class="deadline">Deadline: 12 Oktober 2024</p>
+                        </div>
+                    </div>
+
+                </Wrapper>
             </Container>
         </>
     )
@@ -96,4 +138,59 @@ const Wrapper = styled.div`
     border-radius: 15px;
     width: 80%;
     height: 80%;
+    overflow-y: auto;
+
+    .card {
+    width: 70%;
+    margin: 20px auto;
+    background-color: #FFFBE6;
+    border-left: 10px solid #347928;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    background-color: #C0EBA6; /* Warna background header dari palette */
+    padding: 10px;
+    border-radius: 6px 6px 0 0;
+    color: #347928;
+}
+
+.task-name {
+    font-size: 24px;
+    margin-bottom: 5px;
+    color: #347928; /* Menggunakan warna hijau tua */
+}
+
+.course-name {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #347928; /* Warna hijau tua */
+}
+
+.card-body {
+    padding: 10px;
+    color: #666;
+}
+
+.task-desc {
+    font-size: 16px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.deadline {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FCCD2A; /* Warna kuning untuk deadline */
+}
+
 `
