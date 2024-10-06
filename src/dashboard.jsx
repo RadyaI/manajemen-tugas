@@ -11,9 +11,13 @@ export default function Dashboard() {
 
     const [toggleCard, setToggleCard] = useState(false)
 
+    function handlePopup(value) {
+        setToggleCard(value)
+    }
+
     return (
         <>
-            { toggleCard && (<AddTask></AddTask>)}
+            { toggleCard && (<AddTask setPopup={handlePopup}></AddTask>)}
             <Container>
                 <Filter className="overflow">
                     <input className="input" type="text" placeholder="Cari Tugas" value={searchTugas} onChange={(e) => setSearchTugas(e.target.value)} />
@@ -21,6 +25,7 @@ export default function Dashboard() {
                         <option value="-">Filter</option>
                         <option value="terdekat">Terdekat</option>
                         <option value="terlama">Terlama</option>
+                        <option value="terakhir_diupdate">Terakhir Ditambah</option>
                     </select>
                     <input className="input" type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
                     <button className="btn" onClick={() => setToggleCard(!toggleCard)}>ADD</button>

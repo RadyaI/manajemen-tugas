@@ -1,23 +1,66 @@
+import { useState } from "react"
 import styled, { keyframes } from "styled-components"
+import swal from "sweetalert"
 
-export default function AddTask() {
+import { addDoc, collection, Timestamp } from "firebase/firestore"
+import { db } from "../db/firebase"
+
+export default function AddTask({setPopup}) {
+
+    const [tugas, setTugas] = useState("")
+    const [matkul, setMatkul] = useState("")
+    const [desc, setDesc] = useState("")
+    const [date, setDate] = useState("")
+
+
+    async function add() {
+        if (tugas == '' || matkul == '' || desc == '' || date == '') {
+            swal({
+                icon: "warning",
+                title: "Masih ada inputan yang kosong tuh",
+                button: "Oalah"
+            })
+        } else {
+            await addDoc(collection(db, 'tugas_h'), {
+                tugas: tugas,
+                matkul: matkul,
+                desc: desc,
+                deadline: date,
+                time: Timestamp.now().toMillis()
+            })
+
+            setTugas("")
+            setMatkul("")
+            setDesc("")
+            setDate("")
+            setPopup(false)
+            
+            swal({
+                icon: 'success',
+                title: 'Berhasil Menambah Tugas',
+                button: "Woke"
+            })
+        }
+    }
+
+
     return (
         <>
             <Card>
                 <p>Tambah Tugas</p>
                 <div className="form">
                     <label>Judul Tugas: </label> <br />
-                    <input type="text" placeholder="Masukkan Judul Tugas..." /> <br /><br />
+                    <input type="text" placeholder="Masukkan Judul Tugas..." onChange={(e) => setTugas(e.target.value)} /> <br /><br />
 
                     <label>Matkul: </label> <br />
-                    <input type="text" placeholder="Masukkan Matkul..." /> <br /><br />
+                    <input type="text" placeholder="Masukkan Matkul..." onChange={(e) => setMatkul(e.target.value)} /> <br /><br />
 
                     <label>Deskripsi Tugas: </label> <br />
-                    <input type="text" placeholder="Deskripsi Tugas..." /> <br /><br />
+                    <input type="text" placeholder="Deskripsi Tugas..." onChange={(e) => setDesc(e.target.value)} /> <br /><br />
 
-                    <label>Deadline: </label> <br />
-                    <input type="date" /> <br /><br />
-                    <button>TAMBAH</button><br />
+                    <label>Tenggat: </label> <br />
+                    <input type="date" onChange={(e) => setDate(e.target.value)} /> <br /><br />
+                    <button onClick={add}>TAMBAH</button><br /><br />
                 </div>
             </Card>
         </>
