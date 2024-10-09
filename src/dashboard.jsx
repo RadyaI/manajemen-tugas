@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import Cookies from 'js-cookie'
 
 import AddTask from "./components/addTask"
+import EditTask from "./components/editTask"
 
 import { db, auth } from "./db/firebase"
 import { collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore"
@@ -14,6 +15,8 @@ export default function Dashboard() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [admin, setIsAdmin] = useState(false)
 
+    const [getEditData, setGetEditData] = useState("123");
+
     const [searchTugas, setSearchTugas] = useState("")
     const [filter, setFilter] = useState("-")
     const [tanggal, setTanggal] = useState("")
@@ -21,9 +24,15 @@ export default function Dashboard() {
     const [taskData, setTaskData] = useState([])
 
     const [toggleCard, setToggleCard] = useState(false)
+    const [toggleEditCard, setToggleEditCard] = useState(false)
 
     function handlePopup(value) {
-        setToggleCard(value)
+        try {
+            setToggleCard(value)
+            setToggleEditCard(value)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     async function logIn() {
@@ -102,7 +111,7 @@ export default function Dashboard() {
                     Sekarang Tanggal: {`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`}
                     <p className="deadline">Deadline: {i.deadline}</p>
                     {admin && (<div className="admin">
-                        <p>Edit</p>
+                        <p onClick={() => {setGetEditData(i.id); setToggleEditCard(true) }}>Edit</p>
                         <p onClick={() => hapus(i.id)}>Hapus</p>
                     </div>)}
                 </div>
@@ -137,7 +146,7 @@ export default function Dashboard() {
             dangerMode: true
         })
 
-        if(alert){
+        if (alert) {
             const refD = doc(db, 'tugas_h', id)
             await deleteDoc(refD)
             swal({
@@ -159,6 +168,7 @@ export default function Dashboard() {
     return (
         <>
             {toggleCard && (<AddTask setPopup={handlePopup}></AddTask>)}
+            {toggleEditCard && (<EditTask getEditData={getEditData} setPopup={handlePopup}></EditTask>)}
             <Container>
                 <Filter className="overflow">
                     <input className="input" type="text" placeholder="Cari Tugas" value={searchTugas} onChange={(e) => setSearchTugas(e.target.value)} />

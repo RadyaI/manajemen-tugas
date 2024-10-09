@@ -1,11 +1,9 @@
-import { useState } from "react"
+import { doc, getDoc, updateDoc } from "firebase/firestore"
+import { useEffect, useState } from "react"
 import styled, { keyframes } from "styled-components"
-import swal from "sweetalert"
-
-import { addDoc, collection, Timestamp } from "firebase/firestore"
 import { db } from "../db/firebase"
 
-export default function AddTask({ setPopup }) {
+export default function EditTask({ getEditData, setPopup }) {
 
     const [tugas, setTugas] = useState("")
     const [matkul, setMatkul] = useState("")
@@ -13,56 +11,62 @@ export default function AddTask({ setPopup }) {
     const [date, setDate] = useState("")
 
 
-    async function add() {
-        if (tugas == '' || matkul == '' || desc == '' || date == '') {
-            swal({
-                icon: "warning",
-                title: "Masih ada inputan yang kosong tuh",
-                button: "Oalah"
-            })
-        } else {
-            await addDoc(collection(db, 'tugas_h'), {
-                tugas: tugas,
-                matkul: matkul,
-                desc: desc,
-                deadline: date,
-                deadlineMilis: new Date(date).getTime(),
-                time: Timestamp.now().toMillis()
-            })
-
-            setTugas("")
-            setMatkul("")
-            setDesc("")
-            setDate("")
-            setPopup(false)
-
-            swal({
-                icon: 'success',
-                title: 'Berhasil Menambah Tugas',
-                button: "Woke"
-            })
+    async function getEditTask() {
+        try {
+            const get = await getDoc(doc(db, 'tugas_h', getEditData))
+            const data = get.data()
+            setTugas(data.tugas)
+            setMatkul(data.matkul)
+            setDesc(data.matkul)
+            setDate(data.deadline)
+        } catch (error) {
+            console.log(error)
         }
     }
 
+    async function updateTask() {
+        try {
+            const docRef = doc(db, 'tugas_h', getEditData)
+            await updateDoc(docRef, {
+                tugas: tugas,
+                matkul: matkul,
+                desc: desc,
+                deadline: date
+            })
+
+            swal({
+                icon: 'success',
+                button: false,
+                timer: 500,
+            })
+            setPopup(false)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        getEditTask()
+    }, [getEditData])
 
     return (
         <>
             <Card>
-                <p>Tambah Tugas</p>
+                <p>Edit Tugas</p>
                 <div className="form">
                     <label>Judul Tugas: </label> <br />
-                    <input type="text" placeholder="Masukkan Judul Tugas..." onChange={(e) => setTugas(e.target.value)} /> <br /><br />
+                    <input type="text" placeholder="Masukkan Judul Tugas..." value={tugas} onChange={(e) => setTugas(e.target.value)} /> <br /><br />
 
                     <label>Matkul: </label> <br />
-                    <input type="text" placeholder="Masukkan Matkul..." onChange={(e) => setMatkul(e.target.value)} /> <br /><br />
+                    <input type="text" placeholder="Masukkan Matkul..." value={matkul} onChange={(e) => setMatkul(e.target.value)} /> <br /><br />
 
                     <label>Deskripsi Tugas: </label> <br />
-                    <input type="text" placeholder="Deskripsi Tugas..." onChange={(e) => setDesc(e.target.value)} /> <br /><br />
+                    <input type="text" placeholder="Deskripsi Tugas..." value={desc} onChange={(e) => setDesc(e.target.value)} /> <br /><br />
 
                     <label>Tenggat: </label> <br />
-                    <input type="date" onChange={(e) => setDate(e.target.value)} /> <br /><br />
-                    <button onClick={() => add()}>TAMBAH</button>
-                    <button className="close-btn" onClick={() => setPopup(false)}>TUTUP</button>
+                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} /> <br /><br />
+                    <button onClick={() => updateTask()}>UPDATE</button>
+                    <button className="close-btn" onClick={() => setPopup(false)}>CLOSE</button>
                     <br /><br />
                 </div>
             </Card>
@@ -151,7 +155,6 @@ const Card = styled.div`
         border: 1px solid red;
         color: red;
     }
-
 
     @media only screen and (max-width:700px){
         width: 80%;
