@@ -17,7 +17,7 @@ export default function EditTask({ getEditData, setPopup }) {
             const data = get.data()
             setTugas(data.tugas)
             setMatkul(data.matkul)
-            setDesc(data.matkul)
+            setDesc(data.desc)
             setDate(data.deadline)
         } catch (error) {
             console.log(error)
